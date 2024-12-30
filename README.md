@@ -1,2 +1,0 @@
-# CulinaryCanvas
-Recipe Web App
