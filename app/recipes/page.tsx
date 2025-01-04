@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { RecipeCard } from '@/components/recipes/recipe-card';
 import { RecipeGrid } from '@/components/recipes/recipe-grid';
+import { SearchBar } from '@/components/recipes/search-bar';
 import { Database } from '@/lib/types/supabase';
 import { SupabaseConnectionError } from '@/components/supabase/connection-error';
 import { env } from '@/lib/config/env';
@@ -12,9 +13,9 @@ type Recipe = Database['public']['Tables']['recipes']['Row'];
 
 export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Check if Supabase is configured
   if (!env.supabase.url || !env.supabase.anonKey) {
     return <SupabaseConnectionError />;
   }
@@ -33,6 +34,7 @@ export default function RecipesPage() {
         }
 
         setRecipes(data || []);
+        setFilteredRecipes(data || []);
       } catch (error) {
         console.error('Failed to fetch recipes:', error);
       } finally {
@@ -42,6 +44,16 @@ export default function RecipesPage() {
 
     fetchRecipes();
   }, []);
+
+  const handleSearch = (query: string) => {
+    const lowercaseQuery = query.toLowerCase();
+    const filtered = recipes.filter(
+      (recipe) =>
+        recipe.title.toLowerCase().includes(lowercaseQuery) ||
+        (recipe.description?.toLowerCase() || '').includes(lowercaseQuery)
+    );
+    setFilteredRecipes(filtered);
+  };
 
   if (loading) {
     return (
@@ -57,12 +69,22 @@ export default function RecipesPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8">Discover Recipes</h1>
-      <RecipeGrid>
-        {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
-      </RecipeGrid>
+      <div className="flex flex-col gap-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Discover Recipes</h1>
+          <SearchBar onSearch={handleSearch} />
+        </div>
+        <RecipeGrid>
+          {filteredRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
+          ))}
+        </RecipeGrid>
+        {filteredRecipes.length === 0 && (
+          <p className="text-center text-muted-foreground">
+            No recipes found. Try a different search term.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
