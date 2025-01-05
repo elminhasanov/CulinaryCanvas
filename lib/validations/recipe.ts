@@ -5,6 +5,7 @@ export const recipeSchema = z.object({
   description: z.string().optional(),
   cooking_time: z.number().min(1, 'Cooking time must be at least 1 minute'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
+  categories: z.array(z.string()).optional(),
   ingredients: z.array(
     z.object({
       item: z.string().min(1, 'Ingredient name is required'),

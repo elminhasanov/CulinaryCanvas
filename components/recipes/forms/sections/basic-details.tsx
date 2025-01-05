@@ -17,6 +17,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const CATEGORIES = [
+  'Breakfast',
+  'Lunch',
+  'Dinner',
+  'Dessert',
+  'Snacks',
+  'Vegetarian',
+  'Vegan',
+] as const;
 
 export function BasicDetails({ control }: { control: Control<any> }) {
   return (
@@ -94,6 +105,52 @@ export function BasicDetails({ control }: { control: Control<any> }) {
           )}
         />
       </div>
+
+      <FormField
+        control={control}
+        name="categories"
+        render={() => (
+          <FormItem>
+            <FormLabel>Categories</FormLabel>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {CATEGORIES.map((category) => (
+                <FormField
+                  key={category}
+                  control={control}
+                  name="categories"
+                  render={({ field }) => {
+                    return (
+                      <FormItem
+                        key={category}
+                        className="flex flex-row items-start space-x-3 space-y-0"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(category)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...field.value || [], category])
+                                : field.onChange(
+                                    field.value?.filter(
+                                      (value: string) => value !== category
+                                    )
+                                  );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          {category}
+                        </FormLabel>
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
